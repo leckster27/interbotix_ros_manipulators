@@ -143,7 +143,7 @@ public:
   // Holds the controller button mappings
   button_mappings cntlr = ps4;
 
-  bool enableLogging = false;
+  bool enableLogging = true;
 
   // Holds the name of the controller received from the ROS Parameter server
   std::string controller_type;
@@ -205,29 +205,35 @@ private:
 
     if (enableLogging)
     {
+      bool shouldLog = false;
       for (int i = 0; i < 2; i++)
       {
+        shouldLog = shouldLog || msg.axes[i] != 0;
         axesMessage += std:to_string(msg.axes[i])+',';
       }
       for (int i = 0; i < 8; i++)
       {
+        shouldLog = shouldLog || msg.buttons[i] != 0;
         buttonsMessage += std:to_string(msg.buttons[i])+',';
       }
 
-      RCLCPP_WARN(
-          this->get_logger(),
-          "Axes input: '%s'.",
-          axesMessage.c_str());
-      RCLCPP_WARN(
-          this->get_logger(),
-          "Buttons input: '%s'.",
-          buttonsMessage.c_str());
+      if (shouldLog)
+      {
+        RCLCPP_WARN(
+            this->get_logger(),
+            "Axes input: '%s'.",
+            axesMessage.c_str());
+        RCLCPP_WARN(
+            this->get_logger(),
+            "Buttons input: '%s'.",
+            buttonsMessage.c_str());
+      }
     }
 
     // Check the toggle logging input
     if (msg.buttons.at(cntlr["TOGGLE_LOGGING"]) == 1)
     {
-      enableLogging = !enableLogging;
+      //enableLogging = !enableLogging;
     }
 
     // Check if the torque_cmd should be flipped
