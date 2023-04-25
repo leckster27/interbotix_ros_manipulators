@@ -122,10 +122,10 @@ static const button_mappings usbjoy = {
   {"EE_X", 1} // Forward/Back Axis. Controls arm in and out.
 };
 
-const std::string controller_type_ps3 = 'ps3';
-const std::string controller_type_ps4 = 'ps4';
-const std::string controller_type_xbox360 = 'xbox360';
-const std::string controller_type_usbjoy = 'usbjoy';
+const std::string controller_type_ps3 = "ps3";
+const std::string controller_type_ps4 = "ps4";
+const std::string controller_type_xbox360 = "xbox360";
+const std::string controller_type_usbjoy = "usbjoy";
 
 class InterbotixXSArmJoy : public rclcpp::Node
 {
@@ -200,8 +200,8 @@ private:
     static bool timer_started = false;
     interbotix_xs_msgs::msg::ArmJoy joy_cmd;
 
-    std:string buttonsMessage = "";
-    std:string axesMessage = "";
+    std::string buttonsMessage = "";
+    std::string axesMessage = "";
 
     if (enableLogging)
     {
@@ -209,12 +209,12 @@ private:
       for (int i = 0; i < 2; i++)
       {
         shouldLog = shouldLog || msg.axes[i] != 0;
-        axesMessage += std:to_string(msg.axes[i])+',';
+        axesMessage += std::to_string(msg.axes[i])+',';
       }
       for (int i = 0; i < 8; i++)
       {
         shouldLog = shouldLog || msg.buttons[i] != 0;
-        buttonsMessage += std:to_string(msg.buttons[i])+',';
+        buttonsMessage += std::to_string(msg.buttons[i])+',';
       }
 
       if (shouldLog)
