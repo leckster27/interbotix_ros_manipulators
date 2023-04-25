@@ -110,7 +110,7 @@ static const button_mappings xbox360 = {
 // USB Joystick button mappings
 static const button_mappings usbjoy = {
   // buttons start here
-  {"HOME_POSE", 0}, //BLUE *
+  {"HOME_POSE", 0}, //BLUE
   {"GRIPPER_GRASP", 1}, //GREEN
   {"GRIPPER_RELEASE", 2}, //YELLOW
   {"SLEEP_POSE", 3}, //RED
@@ -270,6 +270,7 @@ private:
       joy_cmd.ee_x_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_X_DEC;
     } else if (msg.axes.at(cntlr["EE_X"]) <= -threshold && flip_ee_x_cmd) {
       joy_cmd.ee_x_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_X_INC;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_x_cmd to EE_X_INC because axes.at(cntlr['EE_X']) was defined as '%s' and set to '%s'.", std::to_string(cntlr["EE_X"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_X"])).c_str());
     }
 
     // Check the ee_y_cmd
