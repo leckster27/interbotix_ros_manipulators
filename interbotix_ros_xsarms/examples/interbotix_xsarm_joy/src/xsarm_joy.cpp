@@ -107,6 +107,26 @@ static const button_mappings xbox360 = {
   {"SPEED", 7}
 };
 
+// USB Joystick button mappings
+static const button_mappings usbjoy = {
+  // buttons start here
+  {"HOME_POSE", 0}, //BLUE *
+  {"GRIPPER_GRASP", 1}, //GREEN
+  {"GRIPPER_RELEASE", 2}, //YELLOW
+  {"SLEEP_POSE", 3}, //RED
+  {"EE_Z_INC", 4}, //BLACK1 Z-Increase button
+  {"EE_Z_DEC", 5}, //BLACK2 Z-Decrease button
+  {"", 6}, //BLACK3 - unmapped
+  // axes start here
+  {"EE_WAIST", 0}, // Left/Right Axis. Controls WAIST as an axis (turn side to side)
+  {"EE_X", 1} // Forward/Back Axis. Controls arm in and out.
+};
+
+const std::string controller_type_ps3 = 'ps3';
+const std::string controller_type_ps4 = 'ps4';
+const std::string controller_type_xbox360 = 'xbox360';
+const std::string controller_type_usbjoy = 'usbjoy';
+
 class InterbotixXSArmJoy : public rclcpp::Node
 {
 public:
@@ -134,17 +154,19 @@ public:
   : rclcpp::Node("xsarm_joy", options)
   {
     this->declare_parameter("threshold", 0.75);
-    this->declare_parameter("controller", "ps4");
+    this->declare_parameter("controller", controller_type_ps4);
 
     this->get_parameter("threshold", threshold);
     this->get_parameter("controller", controller_type);
 
-    if (controller_type == "xbox360") {
+    if (controller_type == controller_type_xbox360) {
       cntlr = xbox360;
-    } else if (controller_type == "ps3") {
+    } else if (controller_type == controller_type_ps3) {
       cntlr = ps3;
-    } else if (controller_type == "ps4") {
+    } else if (controller_type == controller_type_ps4) {
       cntlr = ps4;
+    } else if (controller_type == controller_type_usbjoy) {
+      cntlr = usbjoy;
     } else {
       RCLCPP_WARN(
         this->get_logger(),
@@ -213,13 +235,13 @@ private:
     }
 
     // Check the ee_y_cmd
-    if (controller_type == "ps3" || controller_type == "ps4") {
+    if (controller_type == controller_type_ps3 || controller_type == controller_type_ps4) {
       if (msg.buttons.at(cntlr["EE_Y_INC"]) == 1) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_INC;
       } else if (msg.buttons.at(cntlr["EE_Y_DEC"]) == 1) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_DEC;
       }
-    } else if (controller_type == "xbox360") {
+    } else if (controller_type == controller_type_xbox360) {
       if (msg.axes.at(cntlr["EE_Y_INC"]) <= 1.0 - 2.0 * threshold) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_INC;
       } else if (msg.axes.at(cntlr["EE_Y_DEC"]) <= 1.0 - 2.0 * threshold) {
@@ -228,10 +250,21 @@ private:
     }
 
     // Check the ee_z_cmd
-    if (msg.axes.at(cntlr["EE_Z"]) >= threshold) {
-      joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_INC;
-    } else if (msg.axes.at(cntlr["EE_Z"]) <= -threshold) {
-      joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_DEC;
+    if (controller_type == controller_type_usbjoy)
+    {
+      if (msg.buttons.at(cntlr["EE_Z_INC"]) == 1) {
+        joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_INC;
+      } else if (msg.buttons.at(cntlr["EE_Z_DEC"]) == 1) {
+        joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_DEC;
+      }
+    }
+    else
+    {
+      if (msg.axes.at(cntlr["EE_Z"]) >= threshold) {
+        joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_INC;
+      } else if (msg.axes.at(cntlr["EE_Z"]) <= -threshold) {
+        joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_DEC;
+      }
     }
 
     // Check if the ee_roll_cmd should be flipped
@@ -262,10 +295,21 @@ private:
     }
 
     // Check the waist_cmd
-    if (msg.buttons.at(cntlr["WAIST_CCW"]) == 1) {
-      joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CCW;
-    } else if (msg.buttons.at(cntlr["WAIST_CW"]) == 1) {
-      joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CW;
+    if (controller_type == controller_type_usbjoy)
+    {
+      if (msg.axes.at(cntlr["EE_WAIST"]) >= threshold) {
+        joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CCW;
+      } else if (msg.axes.at(cntlr["EE_WAIST"]) <= -threshold) {
+        joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CW;
+      }
+    }
+    else
+    {
+      if (msg.buttons.at(cntlr["WAIST_CCW"]) == 1) {
+        joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CCW;
+      } else if (msg.buttons.at(cntlr["WAIST_CW"]) == 1) {
+        joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CW;
+      }
     }
 
     // Check the gripper_cmd
@@ -296,7 +340,7 @@ private:
       } else if (msg.buttons.at(cntlr["SPEED_FINE"]) == 1) {
         joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_FINE;
       }
-    } else if (controller_type == "ps4" || controller_type == "xbox360") {
+    } else if (controller_type == controller_type_ps4 || controller_type == controller_type_xbox360) {
       // Check the speed_cmd
       if (msg.axes.at(cntlr["SPEED"]) == 1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_INC;
