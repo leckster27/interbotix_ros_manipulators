@@ -206,12 +206,12 @@ private:
     if (enableLogging)
     {
       bool shouldLog = false;
-      for (int i = 0; i < 2; i++)
+      for (int i = 0; i < 6; i++)
       {
         shouldLog = shouldLog || msg.axes[i] != 0;
         axesMessage += std::to_string(msg.axes[i])+',';
       }
-      for (int i = 0; i < 8; i++)
+      for (int i = 0; i < 12; i++)
       {
         shouldLog = shouldLog || msg.buttons[i] != 0;
         buttonsMessage += std::to_string(msg.buttons[i])+',';
@@ -240,12 +240,14 @@ private:
     if (msg.buttons.at(cntlr["TORQUE_ENABLE"]) == 1 && !flip_torque_cmd_last_state) {
       flip_torque_cmd = true;
       joy_cmd.torque_cmd = interbotix_xs_msgs::msg::ArmJoy::TORQUE_ON;
+      RCLCPP_WARN( this->get_logger(), "Setting torque_cmd to TORQUE_ON because flip_torque_cmd_last_state is false and buttons.at(cntlr['TORQUE_ENABLE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["TORQUE_ENABLE"]).c_str(), std::to_string(msg.buttons.at(cntlr["TORQUE_ENABLE"])).c_str());
     } else if (msg.buttons.at(cntlr["TORQUE_ENABLE"]) == 1 && flip_torque_cmd_last_state) {
       time_start = this->get_clock()->now().seconds();
       timer_started = true;
     } else if (msg.buttons.at(cntlr["TORQUE_ENABLE"]) == 0) {
       if (timer_started && this->get_clock()->now().seconds() - time_start > 3.0) {
         joy_cmd.torque_cmd = interbotix_xs_msgs::msg::ArmJoy::TORQUE_OFF;
+        RCLCPP_WARN( this->get_logger(), "Setting torque_cmd to TORQUE_OFF because timer is > 3.0 and buttons.at(cntlr['TORQUE_ENABLE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["TORQUE_ENABLE"]).c_str(), std::to_string(msg.buttons.at(cntlr["TORQUE_ENABLE"])).c_str());
         flip_torque_cmd = false;
       }
       flip_torque_cmd_last_state = flip_torque_cmd;
@@ -255,8 +257,10 @@ private:
     // Check if the ee_x_cmd should be flipped
     if (msg.buttons.at(cntlr["FLIP_EE_X"]) == 1 && !flip_ee_x_cmd_last_state) {
       flip_ee_x_cmd = true;
+      RCLCPP_WARN( this->get_logger(), "Setting flip_ee_x_cmd to true because flip_ee_x_cmd_last_state is false and buttons.at(cntlr['FLIP_EE_X']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["FLIP_EE_X"]).c_str(), std::to_string(msg.buttons.at(cntlr["FLIP_EE_X"])).c_str());
     } else if (msg.buttons.at(cntlr["FLIP_EE_X"]) == 1 && flip_ee_x_cmd_last_state) {
       flip_ee_x_cmd = false;
+      RCLCPP_WARN( this->get_logger(), "Setting flip_ee_x_cmd to false because flip_ee_x_cmd_last_state is true and buttons.at(cntlr['FLIP_EE_X']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["FLIP_EE_X"]).c_str(), std::to_string(msg.buttons.at(cntlr["FLIP_EE_X"])).c_str());
     } else if (msg.buttons.at(cntlr["FLIP_EE_X"]) == 0) {
       flip_ee_x_cmd_last_state = flip_ee_x_cmd;
     }
@@ -264,27 +268,34 @@ private:
     // Check the ee_x_cmd
     if (msg.axes.at(cntlr["EE_X"]) >= threshold && !flip_ee_x_cmd) {
       joy_cmd.ee_x_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_X_INC;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_x_cmd to EE_X_INC because flip_ee_x_cmd is false and axes.at(cntlr['EE_X']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_X"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_X"])).c_str());
     } else if (msg.axes.at(cntlr["EE_X"]) <= -threshold && !flip_ee_x_cmd) {
       joy_cmd.ee_x_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_X_DEC;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_x_cmd to EE_X_DEC because flip_ee_x_cmd is false and axes.at(cntlr['EE_X']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_X"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_X"])).c_str());
     } else if (msg.axes.at(cntlr["EE_X"]) >= threshold && flip_ee_x_cmd) {
       joy_cmd.ee_x_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_X_DEC;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_x_cmd to EE_X_DEC because flip_ee_x_cmd is true and axes.at(cntlr['EE_X']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_X"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_X"])).c_str());
     } else if (msg.axes.at(cntlr["EE_X"]) <= -threshold && flip_ee_x_cmd) {
       joy_cmd.ee_x_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_X_INC;
-      RCLCPP_WARN( this->get_logger(), "Setting ee_x_cmd to EE_X_INC because axes.at(cntlr['EE_X']) was defined as '%s' and set to '%s'.", std::to_string(cntlr["EE_X"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_X"])).c_str());
+      RCLCPP_WARN( this->get_logger(), "Setting ee_x_cmd to EE_X_INC because flip_ee_x_cmd is true and  axes.at(cntlr['EE_X']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_X"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_X"])).c_str());
     }
 
     // Check the ee_y_cmd
     if (controller_type == controller_type_ps3 || controller_type == controller_type_ps4) {
       if (msg.buttons.at(cntlr["EE_Y_INC"]) == 1) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_y_cmd to EE_Y_INC because ps3/ps4 controller type is used and buttons.at(cntlr['EE_Y_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Y_INC"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_Y_INC"])).c_str());
       } else if (msg.buttons.at(cntlr["EE_Y_DEC"]) == 1) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_y_cmd to EE_Y_DEC because ps3/ps4 controller type is used and buttons.at(cntlr['EE_Y_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Y_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_Y_DEC"])).c_str());
       }
     } else if (controller_type == controller_type_xbox360) {
       if (msg.axes.at(cntlr["EE_Y_INC"]) <= 1.0 - 2.0 * threshold) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_y_cmd to EE_Y_INC because xbox360 controller type is used and axes.at(cntlr['EE_Y_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Y_INC"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_Y_INC"])).c_str());
       } else if (msg.axes.at(cntlr["EE_Y_DEC"]) <= 1.0 - 2.0 * threshold) {
         joy_cmd.ee_y_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Y_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_y_cmd to EE_Y_DEC because xbox360 controller type is used and axes.at(cntlr['EE_Y_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Y_DEC"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_Y_DEC"])).c_str());
       }
     }
 
@@ -293,24 +304,30 @@ private:
     {
       if (msg.buttons.at(cntlr["EE_Z_INC"]) == 1) {
         joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_z_cmd to EE_Z_INC because usbjoy controller type is used and buttons.at(cntlr['EE_Z_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Z_INC"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_Z_INC"])).c_str());
       } else if (msg.buttons.at(cntlr["EE_Z_DEC"]) == 1) {
         joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_z_cmd to EE_Z_DEC because usbjoy controller type is used and buttons.at(cntlr['EE_Z_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Z_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_Z_DEC"])).c_str());
       }
     }
     else
     {
       if (msg.axes.at(cntlr["EE_Z"]) >= threshold) {
         joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_z_cmd to EE_Z_INC because other controller type is used and axes.at(cntlr['EE_Z']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Z"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_Z"])).c_str());
       } else if (msg.axes.at(cntlr["EE_Z"]) <= -threshold) {
         joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_z_cmd to EE_Z_DEC because other controller type is used and axes.at(cntlr['EE_Z']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_Z"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_Z"])).c_str());
       }
     }
 
     // Check if the ee_roll_cmd should be flipped
     if (msg.buttons.at(cntlr["FLIP_EE_ROLL"]) == 1 && !flip_ee_roll_cmd_last_state) {
       flip_ee_roll_cmd = true;
+      RCLCPP_WARN( this->get_logger(), "Setting flip_ee_roll_cmd to true because flip_ee_roll_cmd_last_state is false and buttons.at(cntlr['FLIP_EE_ROLL']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["FLIP_EE_ROLL"]).c_str(), std::to_string(msg.buttons.at(cntlr["FLIP_EE_ROLL"])).c_str());
     } else if (msg.buttons.at(cntlr["FLIP_EE_ROLL"]) == 1 && flip_ee_roll_cmd_last_state) {
       flip_ee_roll_cmd = false;
+      RCLCPP_WARN( this->get_logger(), "Setting flip_ee_roll_cmd to false because flip_ee_roll_cmd_last_state is true and buttons.at(cntlr['FLIP_EE_ROLL']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["FLIP_EE_ROLL"]).c_str(), std::to_string(msg.buttons.at(cntlr["FLIP_EE_ROLL"])).c_str());
     } else if (msg.buttons.at(cntlr["FLIP_EE_ROLL"]) == 0) {
       flip_ee_roll_cmd_last_state = flip_ee_roll_cmd;
     }
@@ -318,19 +335,25 @@ private:
     // Check the ee_roll_cmd
     if (msg.axes.at(cntlr["EE_ROLL"]) >= threshold && !flip_ee_roll_cmd) {
       joy_cmd.ee_roll_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_ROLL_CW;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_roll_cmd to EE_ROLL_CW because flip_ee_roll_cmd is false and axes.at(cntlr['EE_ROLL']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_ROLL"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_ROLL"])).c_str());
     } else if (msg.axes.at(cntlr["EE_ROLL"]) <= -threshold && !flip_ee_roll_cmd) {
       joy_cmd.ee_roll_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_ROLL_CCW;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_roll_cmd to EE_ROLL_CCW because flip_ee_roll_cmd is false and axes.at(cntlr['EE_ROLL']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_ROLL"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_ROLL"])).c_str());
     } else if (msg.axes.at(cntlr["EE_ROLL"]) >= threshold && flip_ee_roll_cmd) {
       joy_cmd.ee_roll_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_ROLL_CCW;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_roll_cmd to EE_ROLL_CCW because flip_ee_roll_cmd is true and axes.at(cntlr['EE_ROLL']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_ROLL"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_ROLL"])).c_str());
     } else if (msg.axes.at(cntlr["EE_ROLL"]) <= -threshold && flip_ee_roll_cmd) {
       joy_cmd.ee_roll_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_ROLL_CW;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_roll_cmd to EE_ROLL_CW because flip_ee_roll_cmd is true and axes.at(cntlr['EE_ROLL']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_ROLL"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_ROLL"])).c_str());
     }
 
     // Check the ee_pitch_cmd
     if (msg.axes.at(cntlr["EE_PITCH"]) >= threshold) {
       joy_cmd.ee_pitch_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_PITCH_UP;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_pitch_cmd to EE_PITCH_UP because axes.at(cntlr['EE_PITCH']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_PITCH"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_PITCH"])).c_str());
     } else if (msg.axes.at(cntlr["EE_PITCH"]) <= -threshold) {
       joy_cmd.ee_pitch_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_PITCH_DOWN;
+      RCLCPP_WARN( this->get_logger(), "Setting ee_pitch_cmd to EE_PITCH_DOWN because axes.at(cntlr['EE_PITCH']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_PITCH"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_PITCH"])).c_str());
     }
 
     // Check the waist_cmd
@@ -338,68 +361,86 @@ private:
     {
       if (msg.axes.at(cntlr["EE_WAIST"]) >= threshold) {
         joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CCW;
+        RCLCPP_WARN( this->get_logger(), "Setting waist_cmd to WAIST_CCW because usbjoy controller type is used and axes.at(cntlr['EE_WAIST']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_WAIST"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_WAIST"])).c_str());
       } else if (msg.axes.at(cntlr["EE_WAIST"]) <= -threshold) {
         joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CW;
+        RCLCPP_WARN( this->get_logger(), "Setting waist_cmd to WAIST_CW because usbjoy controller type is used and axes.at(cntlr['EE_WAIST']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_WAIST"]).c_str(), std::to_string(msg.axes.at(cntlr["EE_WAIST"])).c_str());
       }
     }
     else
     {
       if (msg.buttons.at(cntlr["WAIST_CCW"]) == 1) {
         joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CCW;
+        RCLCPP_WARN( this->get_logger(), "Setting waist_cmd to WAIST_CCW because buttons.at(cntlr['WAIST_CCW']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["WAIST_CCW"]).c_str(), std::to_string(msg.buttons.at(cntlr["WAIST_CCW"])).c_str());
       } else if (msg.buttons.at(cntlr["WAIST_CW"]) == 1) {
         joy_cmd.waist_cmd = interbotix_xs_msgs::msg::ArmJoy::WAIST_CW;
+        RCLCPP_WARN( this->get_logger(), "Setting waist_cmd to WAIST_CW because buttons.at(cntlr['WAIST_CW']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["WAIST_CW"]).c_str(), std::to_string(msg.buttons.at(cntlr["WAIST_CW"])).c_str());
       }
     }
 
     // Check the gripper_cmd
     if (msg.buttons.at(cntlr["GRIPPER_GRASP"]) == 1) {
       joy_cmd.gripper_cmd = interbotix_xs_msgs::msg::ArmJoy::GRIPPER_GRASP;
+        RCLCPP_WARN( this->get_logger(), "Setting gripper_cmd to GRIPPER_GRASP because buttons.at(cntlr['GRIPPER_GRASP']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["GRIPPER_GRASP"]).c_str(), std::to_string(msg.buttons.at(cntlr["GRIPPER_GRASP"])).c_str());
     } else if (msg.buttons.at(cntlr["GRIPPER_RELEASE"]) == 1) {
       joy_cmd.gripper_cmd = interbotix_xs_msgs::msg::ArmJoy::GRIPPER_RELEASE;
+        RCLCPP_WARN( this->get_logger(), "Setting gripper_cmd to GRIPPER_RELEASE because buttons.at(cntlr['GRIPPER_RELEASE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["GRIPPER_RELEASE"]).c_str(), std::to_string(msg.buttons.at(cntlr["GRIPPER_RELEASE"])).c_str());
     }
 
     // Check the pose_cmd
     if (msg.buttons.at(cntlr["HOME_POSE"]) == 1) {
       joy_cmd.pose_cmd = interbotix_xs_msgs::msg::ArmJoy::HOME_POSE;
+        RCLCPP_WARN( this->get_logger(), "Setting pose_cmd to HOME_POSE because buttons.at(cntlr['HOME_POSE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["HOME_POSE"]).c_str(), std::to_string(msg.buttons.at(cntlr["HOME_POSE"])).c_str());
     } else if (msg.buttons.at(cntlr["SLEEP_POSE"]) == 1) {
       joy_cmd.pose_cmd = interbotix_xs_msgs::msg::ArmJoy::SLEEP_POSE;
+        RCLCPP_WARN( this->get_logger(), "Setting pose_cmd to SLEEP_POSE because buttons.at(cntlr['SLEEP_POSE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SLEEP_POSE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SLEEP_POSE"])).c_str());
     }
 
     if (controller_type == "ps3") {
       // Check the speed_cmd
       if (msg.buttons.at(cntlr["SPEED_INC"]) == 1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_INC because ps3 controller type is used and buttons.at(cntlr['SPEED_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_INC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_INC"])).c_str());
       } else if (msg.buttons.at(cntlr["SPEED_DEC"]) == 1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_DEC because ps3 controller type is used and buttons.at(cntlr['SPEED_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_DEC"])).c_str());
       }
 
       // Check the speed_toggle_cmd
       if (msg.buttons.at(cntlr["SPEED_COARSE"]) == 1) {
         joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_COARSE;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_COARSE because ps3 controller type is used and buttons.at(cntlr['SPEED_COARSE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_COARSE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_COARSE"])).c_str());
       } else if (msg.buttons.at(cntlr["SPEED_FINE"]) == 1) {
         joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_FINE;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_FINE because ps3 controller type is used and buttons.at(cntlr['SPEED_FINE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_FINE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_FINE"])).c_str());
       }
     } else if (controller_type == controller_type_ps4 || controller_type == controller_type_xbox360) {
       // Check the speed_cmd
       if (msg.axes.at(cntlr["SPEED"]) == 1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_INC because ps4/xbox360 controller type is used and axes.at(cntlr['SPEED']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED"]).c_str(), std::to_string(msg.axes.at(cntlr["SPEED"])).c_str());
       } else if (msg.axes.at(cntlr["SPEED"]) == -1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_DEC because ps4/xbox360 controller type is used and axes.at(cntlr['SPEED']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED"]).c_str(), std::to_string(msg.axes.at(cntlr["SPEED"])).c_str());
       }
 
       // Check the speed_toggle_cmd
       if (msg.axes.at(cntlr["SPEED_TYPE"]) == 1) {
         joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_COARSE;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_COARSE because ps4/xbox360 controller type is used and axes.at(cntlr['SPEED_TYPE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_TYPE"]).c_str(), std::to_string(msg.axes.at(cntlr["SPEED_TYPE"])).c_str());
       } else if (msg.axes.at(cntlr["SPEED_TYPE"]) == -1) {
         joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_FINE;
+        RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_FINE because ps4/xbox360 controller type is used and axes.at(cntlr['SPEED_TYPE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_TYPE"]).c_str(), std::to_string(msg.axes.at(cntlr["SPEED_TYPE"])).c_str());
       }
     }
 
     // Check the gripper_pwm_cmd
     if (msg.buttons.at(cntlr["GRIPPER_PWM_INC"]) == 1) {
       joy_cmd.gripper_pwm_cmd = interbotix_xs_msgs::msg::ArmJoy::GRIPPER_PWM_INC;
+        RCLCPP_WARN( this->get_logger(), "Setting gripper_pwm_cmd to GRIPPER_PWM_INC because buttons.at(cntlr['GRIPPER_PWM_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["GRIPPER_PWM_INC"]).c_str(), std::to_string(msg.buttons.at(cntlr["GRIPPER_PWM_INC"])).c_str());
     } else if (msg.buttons.at(cntlr["GRIPPER_PWM_DEC"]) == 1) {
       joy_cmd.gripper_pwm_cmd = interbotix_xs_msgs::msg::ArmJoy::GRIPPER_PWM_DEC;
+        RCLCPP_WARN( this->get_logger(), "Setting gripper_pwm_cmd to GRIPPER_PWM_DEC because buttons.at(cntlr['GRIPPER_PWM_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["GRIPPER_PWM_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["GRIPPER_PWM_DEC"])).c_str());
     }
 
     // Only publish a ArmJoy message if any of the following fields have changed.
