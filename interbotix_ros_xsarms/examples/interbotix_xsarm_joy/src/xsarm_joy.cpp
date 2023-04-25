@@ -116,7 +116,7 @@ static const button_mappings usbjoy = {
   {"SLEEP_POSE", 3}, //RED
   {"EE_Z_INC", 4}, //BLACK1 Z-Increase button
   {"EE_Z_DEC", 5}, //BLACK2 Z-Decrease button
-  {"", 6}, //BLACK3 - unmapped
+  {"TOGGLE_LOGGING", 6}, //BLACK3 - unmapped currntly just used for turning on debug logging
   // axes start here
   {"EE_WAIST", 0}, // Left/Right Axis. Controls WAIST as an axis (turn side to side)
   {"EE_X", 1} // Forward/Back Axis. Controls arm in and out.
@@ -142,6 +142,8 @@ public:
 
   // Holds the controller button mappings
   button_mappings cntlr = ps4;
+
+  bool enableLogging = false;
 
   // Holds the name of the controller received from the ROS Parameter server
   std::string controller_type;
@@ -197,6 +199,36 @@ private:
     static double time_start;
     static bool timer_started = false;
     interbotix_xs_msgs::msg::ArmJoy joy_cmd;
+
+    std:string buttonsMessage = "";
+    std:string axesMessage = "";
+
+    if (enableLogging)
+    {
+      for (int i = 0; i < 2; i++)
+      {
+        axesMessage += std:to_string(msg.axes[i])+',';
+      }
+      for (int i = 0; i < 8; i++)
+      {
+        buttonsMessage += std:to_string(msg.buttons[i])+',';
+      }
+
+      RCLCPP_WARN(
+          this->get_logger(),
+          "Axes input: '%s'.",
+          axesMessage.c_str());
+      RCLCPP_WARN(
+          this->get_logger(),
+          "Buttons input: '%s'.",
+          buttonsMessage.c_str());
+    }
+
+    // Check the toggle logging input
+    if (msg.buttons.at(cntlr["TOGGLE_LOGGING"]) == 1)
+    {
+      enableLogging = !enableLogging;
+    }
 
     // Check if the torque_cmd should be flipped
     if (msg.buttons.at(cntlr["TORQUE_ENABLE"]) == 1 && !flip_torque_cmd_last_state) {
