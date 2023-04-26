@@ -451,14 +451,16 @@ private:
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_DEC;
         RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_DEC because ps3/usbjoy controller type is used and buttons.at(cntlr['SPEED_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_DEC"])).c_str());
       }
-
-      // Check the speed_toggle_cmd
-      if (msg.buttons.at(cntlr["SPEED_COARSE"]) == 1) {
-        joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_COARSE;
-        RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_COARSE because ps3 controller type is used and buttons.at(cntlr['SPEED_COARSE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_COARSE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_COARSE"])).c_str());
-      } else if (msg.buttons.at(cntlr["SPEED_FINE"]) == 1) {
-        joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_FINE;
-        RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_FINE because ps3 controller type is used and buttons.at(cntlr['SPEED_FINE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_FINE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_FINE"])).c_str());
+      if (controller_type == controller_type_ps3)
+      {
+        // Check the speed_toggle_cmd
+        if (msg.buttons.at(cntlr["SPEED_COARSE"]) == 1) {
+          joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_COARSE;
+          RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_COARSE because ps3 controller type is used and buttons.at(cntlr['SPEED_COARSE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_COARSE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_COARSE"])).c_str());
+        } else if (msg.buttons.at(cntlr["SPEED_FINE"]) == 1) {
+          joy_cmd.speed_toggle_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_FINE;
+          RCLCPP_WARN( this->get_logger(), "Setting speed_toggle_cmd to SPEED_FINE because ps3 controller type is used and buttons.at(cntlr['SPEED_FINE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_FINE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_FINE"])).c_str());
+        }
       }
     } else if (controller_type == controller_type_ps4 || controller_type == controller_type_xbox360) {
       // Check the speed_cmd
