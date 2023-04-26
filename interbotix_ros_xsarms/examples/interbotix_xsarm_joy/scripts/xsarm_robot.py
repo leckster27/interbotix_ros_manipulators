@@ -56,10 +56,10 @@ class XSArmRobot(InterbotixManipulatorXS):
     rotate_step = 0.04
     translate_step = 0.01
     gripper_pressure_step = 0.125
-    current_loop_rate = 25
+    current_loop_rate = 10 #lower is slower
     current_torque_status = True
     current_gripper_pressure = 0.5
-    loop_rates = {'coarse': 25, 'fine': 25}
+    loop_rates = {'coarse': 10, 'fine': 10}
     joy_msg = ArmJoy()
     joy_mutex = Lock()
 
@@ -135,7 +135,7 @@ class XSArmRobot(InterbotixManipulatorXS):
         # Check the speed_cmd
         if (msg.speed_cmd == ArmJoy.SPEED_INC and self.current_loop_rate < 40):
             self.update_speed(loop_rate=self.current_loop_rate + 1)
-        elif (msg.speed_cmd == ArmJoy.SPEED_DEC and self.current_loop_rate > 10):
+        elif (msg.speed_cmd == ArmJoy.SPEED_DEC and self.current_loop_rate > 5):
             self.update_speed(loop_rate=self.current_loop_rate - 1)
 
         # Check the speed_toggle_cmd
