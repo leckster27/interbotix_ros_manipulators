@@ -211,7 +211,7 @@ private:
     if (enableLogging)
     {
       bool shouldLog = false;
-      for (int i = 0; i < 6; i++)
+      for (int i = 0; i < 2; i++)
       {
         shouldLog = shouldLog || msg.axes[i] != 0;
         axesMessage += std::to_string(msg.axes[i])+',';
