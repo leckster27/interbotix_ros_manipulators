@@ -385,9 +385,11 @@ private:
     {
       if (msg.buttons.at(cntlr["EE_PITCH_UP"]) == 1) {
         joy_cmd.ee_pitch_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_PITCH_UP;
+        joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_INC;
         RCLCPP_WARN( this->get_logger(), "Setting ee_pitch_cmd to EE_PITCH_UP because buttons.at(cntlr['EE_PITCH_UP']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_PITCH_UP"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_PITCH_UP"])).c_str());
       } else if (msg.buttons.at(cntlr["EE_PITCH_DOWN"]) == 1) {
         joy_cmd.ee_pitch_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_PITCH_DOWN;
+        joy_cmd.ee_z_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_Z_DEC;
         RCLCPP_WARN( this->get_logger(), "Setting ee_pitch_cmd to EE_PITCH_DOWN because buttons.at(cntlr['EE_PITCH_DOWN']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_PITCH_DOWN"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_PITCH_DOWN"])).c_str());
       }
     }
@@ -485,7 +487,7 @@ private:
     // Check the gripper_pwm_cmd
     if (controller_type == controller_type_usbjoy)
     {
-      //For now do nothing with ee_pitch_cmd for usbjoy
+      //For now do nothing with gripper_pwm_cmd for usbjoy
     }
     else
     {
