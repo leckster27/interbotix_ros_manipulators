@@ -116,7 +116,12 @@ static const button_mappings usbjoy = {
   {"SLEEP_POSE", 3}, //RED
   {"EE_Z_INC", 4}, //BLACK1 Z-Increase button
   {"EE_Z_DEC", 5}, //BLACK2 Z-Decrease button
-  {"TOGGLE_LOGGING", 6}, //BLACK3 - unmapped currntly just used for turning on debug logging
+  {"EE_PITCH_UP", 6}, //BLACK3 - Bend wrist up
+  {"EE_PITCH_DOWN", 7}, //BLACK4 - Bend wrist down
+  //8 unused
+  //9 unused
+  {"SPEED_INC", 10}, //BLACKSLIM1 - increase speed
+  {"SPEED_DEC", 11}, //BLACKSLIM2 - decreaes speed
   // axes start here
   {"EE_WAIST", 0}, // Left/Right Axis. Controls WAIST as an axis (turn side to side)
   {"EE_X", 1} // Forward/Back Axis. Controls arm in and out.
@@ -378,7 +383,13 @@ private:
     // Check the ee_pitch_cmd
     if (controller_type == controller_type_usbjoy)
     {
-      //For now do nothing with ee_pitch_cmd for usbjoy
+      if (msg.buttons.at(cntlr["EE_PITCH_UP"]) == 1) {
+        joy_cmd.ee_pitch_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_PITCH_UP;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_pitch_cmd to EE_PITCH_UP because buttons.at(cntlr['EE_PITCH_UP']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_PITCH_UP"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_PITCH_UP"])).c_str());
+      } else if (msg.buttons.at(cntlr["EE_PITCH_DOWN"]) == 1) {
+        joy_cmd.ee_pitch_cmd = interbotix_xs_msgs::msg::ArmJoy::EE_PITCH_DOWN;
+        RCLCPP_WARN( this->get_logger(), "Setting ee_pitch_cmd to EE_PITCH_DOWN because buttons.at(cntlr['EE_PITCH_DOWN']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["EE_PITCH_DOWN"]).c_str(), std::to_string(msg.buttons.at(cntlr["EE_PITCH_DOWN"])).c_str());
+      }
     }
     else
     {
@@ -431,14 +442,14 @@ private:
         RCLCPP_WARN( this->get_logger(), "Setting pose_cmd to SLEEP_POSE because buttons.at(cntlr['SLEEP_POSE']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SLEEP_POSE"]).c_str(), std::to_string(msg.buttons.at(cntlr["SLEEP_POSE"])).c_str());
     }
 
-    if (controller_type == "ps3") {
+    if (controller_type == controller_type_ps3 || controller_type == controller_type_usbjoy) {
       // Check the speed_cmd
       if (msg.buttons.at(cntlr["SPEED_INC"]) == 1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_INC;
-        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_INC because ps3 controller type is used and buttons.at(cntlr['SPEED_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_INC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_INC"])).c_str());
+        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_INC because ps3/usbjoy controller type is used and buttons.at(cntlr['SPEED_INC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_INC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_INC"])).c_str());
       } else if (msg.buttons.at(cntlr["SPEED_DEC"]) == 1) {
         joy_cmd.speed_cmd = interbotix_xs_msgs::msg::ArmJoy::SPEED_DEC;
-        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_DEC because ps3 controller type is used and buttons.at(cntlr['SPEED_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_DEC"])).c_str());
+        RCLCPP_WARN( this->get_logger(), "Setting speed_cmd to SPEED_DEC because ps3/usbjoy controller type is used and buttons.at(cntlr['SPEED_DEC']) was mapped as '%s' and set to '%s'.", std::to_string(cntlr["SPEED_DEC"]).c_str(), std::to_string(msg.buttons.at(cntlr["SPEED_DEC"])).c_str());
       }
 
       // Check the speed_toggle_cmd
